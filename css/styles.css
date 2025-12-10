@@ -281,6 +281,25 @@ body {
   padding: 16px;
 }
 
+#youwin-modal.hidden {
+  display: none;
+}
+
+#youwin-modal .modal-content {
+  background: #1a2233;
+  color: #fff;
+  padding: 24px;
+  border-radius: 10px;
+  text-align: center;
+  min-width: 220px;
+  max-width: 90vw;
+}
+
+#btn-youwin-restart {
+  margin-top: 16px;
+  padding: 12px 24px;
+}
+
 #gameover-modal.modal {
   position: fixed;
   top: 0;
@@ -294,7 +313,7 @@ body {
   z-index: 1000;
 }
 
-#gameover-modal .modal-content {
+#gameover-modal.modal-content {
   background: #1a2233;
   color: #fff;
   padding: 24px;

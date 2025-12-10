@@ -238,7 +238,7 @@ class GameCycle {
   constructor() {
     this.level = 1;
     this.strLevel = pad2(this.level);
-    this.maxLevel = 20;
+    this.maxLevel = 25;
     this.stakeMax = 0;
     this.stake = 0;
     this.reroll = 0;
@@ -269,7 +269,7 @@ class GameCycle {
     // Update all stake status
     if (levelup) {
       if (this.level === this.maxLevel) {
-        alert("NICE YOU WON! 🎉");
+        openYouWinModal();
         return;
       }
       this.level += 1;
@@ -479,6 +479,18 @@ function hideGameOverModal() {
   resetGame();
 }
 
+function openYouWinModal() {
+  const modal = document.getElementById("youwin-modal");
+  modal.classList.remove("hidden");
+  modal.querySelector(
+    ".win-description"
+  ).innerHTML = `Congratulations!<br>Final Score: ${player.formatScore()}<br>High Score: ${player.formatHS()}`;
+}
+
+function hideYouWinModal() {
+  document.getElementById("youwin-modal").classList.add("hidden");
+  resetGame();
+}
 // ===== Button Wiring ===== //
 
 $("#btn-reroll").addEventListener("click", rerollSelected);
@@ -490,6 +502,9 @@ $("#close-upgrade").addEventListener("click", () =>
 $("#btn-reset").addEventListener("click", resetGame);
 $("#btn-gameover-restart").addEventListener("click", () => {
   hideGameOverModal();
+});
+$("#btn-youwin-restart").addEventListener("click", () => {
+  hideYouWinModal();
 });
 // ===== Game Start (Initial Phase) ===== //
 
