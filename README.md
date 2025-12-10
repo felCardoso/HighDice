@@ -4,7 +4,7 @@ Small single-player dice game built with HTML/CSS/JS.
 
 ## Overview
 
-High Dice is a poker-like dice game using 5 dice. The player makes "plays" that consume an ante, can reroll selected dice, and can upgrade hand levels to increase scores.
+High Dice is a poker-like dice game based on Balatro, but using 5 dice. The player makes "plays" that consume an stake, can reroll selected dice, and can upgrade hand levels to increase scores.
 
 ## How to run
 
@@ -29,8 +29,8 @@ High Dice is a poker-like dice game using 5 dice. The player makes "plays" that 
 
 1. Click any die to select or deselect it.
 2. Click "Reroll" to reroll selected dice (consumes rerolls).
-3. Click "Play Hand" to score the current hand — this computes score and subtracts from the ante.
-4. When the ante reaches zero you level up and receive upgrade points.
+3. Click "Play Hand" to score the current hand — this computes score and subtracts from the stake (consumes plays).
+4. When the stake reaches zero you level up and upgrade 1 of 4 hand options.
 5. Use "Hand Upgrade" to level up specific hands (improves multipliers/points).
 
 Game messages appear in the on-screen console log.
