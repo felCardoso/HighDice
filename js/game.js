@@ -471,7 +471,7 @@ function openGameOverModal() {
     .getElementById("gameover-modal")
     .querySelector(".game-over-description").innerHTML = `Lost at level ${
     run.level
-  }! <br> Run Score: ${player.formatScore()}<br>High Score: ${player.formatHS()}`;
+  }! <br><br> Run Score: ${player.formatScore()}<br>High Score: ${player.formatHS()}`;
 }
 
 function hideGameOverModal() {
