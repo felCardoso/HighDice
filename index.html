@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <link rel="shortcut icon" href="assets/favicon32.png" type="image/x-icon" />
+  <meta charset="utf-8" />
+  <title>High Dice</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <link href="css/styles.css" rel="stylesheet" />
+  <link href="/manifest.json" rel="manifest" />
+</head>
+
+<body>
+  <header class="topbar">
+    <h1 id="game-name"></h1>
+    <div class="player">
+      <!-- <span id="player-name"></span> -->
+      <a href="#ranking" id="player-abbr" class="badge"></a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hud">
+      <div class="hud-item">
+        <div class="label">Level</div>
+        <div class="value" id="hud-level">01</div>
+      </div>
+      <div class="hud-item">
+        <div class="label">Stake</div>
+        <div class="value" id="hud-stake">0</div>
+      </div>
+      <!-- <div class="hud-item">
+          <div class="label">High Score</div>
+          <div class="value" id="hud-hs">0</div>
+        </div> -->
+    </section>
+
+    <section class="dice-area" id="dice-area"></section>
+
+    <section class="controls">
+      <button id="btn-play" class="btn success">
+        Play Hand
+        <div class="value" id="plays">0</div>
+      </button>
+      <button id="btn-reroll" class="btn primary">
+        Reroll
+        <div class="value" id="rerolls">0</div>
+      </button>
+    </section>
+    <!-- <section class="upgrade">
+      <button id="btn-upgrade" class="btn warning">
+        Hand Upgrade
+        <div class="value" id="upgrades">0</div>
+      </button>
+    </section> -->
+
+    <section class="messages">
+      <h2>Console Log</h2>
+      <div id="msg-log" class="log"></div>
+    </section>
+
+    <section class="reset">
+      <button id="btn-reset" class="btn danger">Reset Game</button>
+    </section>
+  </main>
+
+  <!-- Modal de Upgrade -->
+  <div id="upgrade-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Hand Upgrade</h3>
+      <div id="upgrade-options" class="options"></div>
+      <button id="close-upgrade" class="btn close-upgrade">Close</button>
+    </div>
+  </div>
+
+  <!-- Modal de Game Over -->
+  <div id="gameover-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Game Over</h2>
+      <p class="game-over-description">Your session has ended!</p>
+      <button id="btn-gameover-restart" class="btn primary">Restart</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/game.js"></script>
+</body>
+
+</html>
