@@ -1,6 +1,6 @@
 // ===== Constants ===== //
 
-const gameVersion = 0.1;
+const gameVersion = "1.0A";
 const gameName = "High Dice";
 
 const HAND_SCORE = {
