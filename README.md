@@ -8,8 +8,7 @@ High Dice is a poker-like dice game based on Balatro, but using 5 dice. The play
 
 ## How to run
 
-- <a href="https://felcardoso.github.io/HighDice/" target="_blank" rel="noopener">HighDice</a>
-- Open `index.html` in a browser (double-click or serve with a simple static server).
+- Play at <a href="https://felcardoso.github.io/HighDice/" target="_blank" rel="noopener">HighDice</a> or open `index.html` in a browser (double-click or serve with a simple static server).
 
 ## Project structure
 
