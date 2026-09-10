@@ -13,6 +13,12 @@ import {
 } from '../game/hands'
 import { applyJokerBonuses, JOKER_CATALOG, type Joker } from '../game/jokers'
 import { createInitialRunState, deductStake, type RunState } from '../game/run'
+import {
+  createSeededRng,
+  generateRandomSeed,
+  hashSeed,
+  type Rng,
+} from '../game/rng'
 import { checkScore, type ScoreResult } from '../game/scoring'
 import { buyJoker as buyJokerLogic, generateShopOffers } from '../game/shop'
 import type { Die, HandLevels, HandType } from '../game/types'
@@ -29,6 +35,8 @@ export interface LogEntry {
 
 interface RunStoreState {
   run: RunState
+  seed: string
+  rng: Rng
   dice: Die[]
   handLevels: HandLevels
   upgradeOptions: HandType[]
@@ -43,7 +51,8 @@ interface RunStoreState {
   playHand: () => void
   upgradeHand: (hand: HandType) => void
   buyJoker: (jokerId: string) => void
-  resetRun: () => void
+  /** Starts a fresh run. Pass a seed to reproduce a specific run's dice sequence. */
+  resetRun: (seed?: string) => void
 }
 
 let nextLogId = 0
@@ -65,16 +74,25 @@ function formatScoreLog(score: ScoreResult): string {
   return `${HAND_NAMES[hand]} | (${base} + ${diceScore} (+${levelBonus})) * (${mult} + ${level - 1}) = ${result}${jokerNote}`
 }
 
-function freshDiceAndLevels() {
-  return { dice: createDiceSet(5), handLevels: createDefaultHandLevels() }
+function createRunSeed(seed?: string): { seed: string; rng: Rng } {
+  const finalSeed = seed?.trim() ? seed.trim() : generateRandomSeed()
+  return { seed: finalSeed, rng: createSeededRng(hashSeed(finalSeed)) }
 }
+
+function freshDiceAndLevels(rng: Rng) {
+  return { dice: createDiceSet(5, rng), handLevels: createDefaultHandLevels() }
+}
+
+const initialSeed = createRunSeed()
 
 export const useRunStore = create<RunStoreState>((set, get) => ({
   run: createInitialRunState(),
-  ...freshDiceAndLevels(),
+  seed: initialSeed.seed,
+  rng: initialSeed.rng,
+  ...freshDiceAndLevels(initialSeed.rng),
   upgradeOptions: [],
   lastScore: null,
-  log: withLog([], 'High Dice — new run started.'),
+  log: withLog([], `High Dice — new run started. Seed: ${initialSeed.seed}`),
   coins: 0,
   jokers: [],
   shopOffers: [],
@@ -82,20 +100,20 @@ export const useRunStore = create<RunStoreState>((set, get) => ({
   toggleDie: (id) => set((state) => ({ dice: toggleDieAt(state.dice, id) })),
 
   reroll: () => {
-    const { run, dice, log } = get()
+    const { run, dice, log, rng } = get()
     if (run.status !== 'playing' || run.reroll <= 0) {
       set({ log: withLog(log, 'Out of rerolls.') })
       return
     }
     set({
-      dice: rerollDice(dice),
+      dice: rerollDice(dice, rng),
       run: { ...run, reroll: run.reroll - 1 },
       log: withLog(log, 'Rerolled selected dice.'),
     })
   },
 
   playHand: () => {
-    const { run, dice, handLevels, log, jokers, coins } = get()
+    const { run, dice, handLevels, log, jokers, coins, rng } = get()
     if (run.status !== 'playing' || run.play <= 0) return
 
     const diceValues = dice.map((d) => d.value)
@@ -119,8 +137,8 @@ export const useRunStore = create<RunStoreState>((set, get) => ({
     if (nextRun.status === 'won') {
       nextLog = withLog(nextLog, `You beat level ${nextRun.maxLevel}!`)
     } else if (leveledUp) {
-      upgradeOptions = computeUpgradeOptions()
-      shopOffers = generateShopOffers(JOKER_CATALOG, jokers)
+      upgradeOptions = computeUpgradeOptions(undefined, rng)
+      shopOffers = generateShopOffers(JOKER_CATALOG, jokers, rng)
       nextCoins += LEVEL_UP_COINS
       nextLog = withLog(nextLog, `Level ${nextRun.level}.`)
       nextLog = withLog(nextLog, 'Rerolls and plays reset.')
@@ -134,7 +152,7 @@ export const useRunStore = create<RunStoreState>((set, get) => ({
 
     set({
       run: finalRun,
-      dice: shouldRollDice ? rollAll(dice) : dice,
+      dice: shouldRollDice ? rollAll(dice, rng) : dice,
       lastScore: score,
       upgradeOptions,
       shopOffers,
@@ -183,17 +201,20 @@ export const useRunStore = create<RunStoreState>((set, get) => ({
     })
   },
 
-  resetRun: () => {
+  resetRun: (seed) => {
     usePlayerStore.getState().resetScore()
+    const nextSeed = createRunSeed(seed)
     set({
       run: createInitialRunState(),
-      ...freshDiceAndLevels(),
+      seed: nextSeed.seed,
+      rng: nextSeed.rng,
+      ...freshDiceAndLevels(nextSeed.rng),
       upgradeOptions: [],
       lastScore: null,
       coins: 0,
       jokers: [],
       shopOffers: [],
-      log: withLog([], 'Game reset!'),
+      log: withLog([], `Game reset! Seed: ${nextSeed.seed}`),
     })
   },
 }))

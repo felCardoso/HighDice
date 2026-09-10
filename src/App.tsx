@@ -5,6 +5,7 @@ import { EventLog } from './components/log/EventLog'
 import { GameOverModal } from './components/modals/GameOverModal'
 import { Hud } from './components/hud/Hud'
 import { JokerTray } from './components/jokers/JokerTray'
+import { SeedBar } from './components/hud/SeedBar'
 import { ShopModal } from './components/modals/ShopModal'
 import { UpgradeModal } from './components/modals/UpgradeModal'
 import { WinModal } from './components/modals/WinModal'
@@ -39,6 +40,11 @@ function App() {
     resetRun()
   }
 
+  const handleStartWithSeed = (seed: string) => {
+    setPostLevelUpStep('none')
+    resetRun(seed)
+  }
+
   return (
     <div className="min-h-dvh bg-[#0f172a] text-slate-100">
       <header className="flex items-center justify-between border-b border-[#0b2a4a] bg-[#0b1220] px-5 py-4">
@@ -50,6 +56,7 @@ function App() {
 
       <main className="mx-auto max-w-[980px] px-4 py-6">
         <Hud />
+        <SeedBar onStartWithSeed={handleStartWithSeed} />
         <JokerTray />
         <DiceGrid />
         <Controls />

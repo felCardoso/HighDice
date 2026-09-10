@@ -134,4 +134,27 @@ describe('resetRun', () => {
     expect(usePlayerStore.getState().score).toBe(0)
     expect(usePlayerStore.getState().highScore).toBe(300)
   })
+
+  it('reproduces the same dice sequence when given the same seed', () => {
+    useRunStore.getState().resetRun('replay-me')
+    const firstRoll = useRunStore.getState().dice.map((d) => d.value)
+    useRunStore.getState().reroll()
+    const afterReroll = useRunStore.getState().dice.map((d) => d.value)
+
+    useRunStore.getState().resetRun('replay-me')
+    const secondRoll = useRunStore.getState().dice.map((d) => d.value)
+    useRunStore.getState().reroll()
+    const secondAfterReroll = useRunStore.getState().dice.map((d) => d.value)
+
+    expect(useRunStore.getState().seed).toBe('replay-me')
+    expect(secondRoll).toEqual(firstRoll)
+    expect(secondAfterReroll).toEqual(afterReroll)
+  })
+
+  it('picks a new random seed when none is given', () => {
+    useRunStore.getState().resetRun('first-seed')
+    const firstSeed = useRunStore.getState().seed
+    useRunStore.getState().resetRun()
+    expect(useRunStore.getState().seed).not.toBe(firstSeed)
+  })
 })
