@@ -16,6 +16,8 @@ reference) to a React app, with jokers, a shop, and seeded runs on top of the or
 - **Seeded runs** — every run has a shareable seed; typing the same seed back in reproduces the
   exact same dice sequence for the whole run.
 - A persistent high score (stored in `localStorage`).
+- **Installable, works offline** — a full PWA: install it to your home screen/desktop, and it
+  keeps working with no network connection via a precaching service worker.
 
 ## Stack
 
@@ -49,6 +51,19 @@ src/
 tests/          # unit tests (Vitest)
 legacy/         # original vanilla-JS prototype, kept for reference during migration
 ```
+
+## PWA
+
+Configured via `vite-plugin-pwa` (see `vite.config.ts`). The service worker precaches every build
+asset (JS/CSS/HTML/icons) for offline play, and auto-updates in the background — a small toast
+prompts a reload when a new version is available. On Chromium browsers, an install banner appears
+automatically; the "Install" button in the app triggers it directly.
+
+**A note for anyone touching the Workbox config**: don't list the same asset in both
+`workbox.globPatterns` and `includeAssets` (or `manifest.icons`) — each ends up with a different
+revision hash for the same URL, which throws `add-to-cache-list-conflicting-entries` and crashes
+the service worker's install step. The current split (JS/CSS/HTML/webmanifest via `globPatterns`,
+favicons via `includeAssets`, manifest icons handled automatically) avoids this.
 
 ## CI/CD
 

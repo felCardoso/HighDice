@@ -6,6 +6,8 @@ import { EventLog } from './components/log/EventLog'
 import { GameOverModal } from './components/modals/GameOverModal'
 import { Hud } from './components/hud/Hud'
 import { JokerTray } from './components/jokers/JokerTray'
+import { InstallPrompt } from './components/pwa/InstallPrompt'
+import { UpdateToast } from './components/pwa/UpdateToast'
 import { SeedBar } from './components/hud/SeedBar'
 import { ShopModal } from './components/modals/ShopModal'
 import { UpgradeModal } from './components/modals/UpgradeModal'
@@ -59,6 +61,7 @@ function App() {
       </header>
 
       <main className="mx-auto max-w-[980px] px-4 py-6">
+        <InstallPrompt />
         <Hud />
         <SeedBar onStartWithSeed={handleStartWithSeed} />
         <JokerTray />
@@ -83,6 +86,8 @@ function App() {
       )}
       {status === 'gameover' && <GameOverModal onRestart={handleRestart} />}
       {status === 'won' && <WinModal onRestart={handleRestart} />}
+
+      <UpdateToast />
     </div>
   )
 }
