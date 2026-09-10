@@ -1,3 +1,4 @@
+import { Dices, RotateCcw } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Controls } from './components/hud/Controls'
 import { DiceGrid } from './components/dice/DiceGrid'
@@ -48,7 +49,10 @@ function App() {
   return (
     <div className="min-h-dvh bg-[#0f172a] text-slate-100">
       <header className="flex items-center justify-between border-b border-[#0b2a4a] bg-[#0b1220] px-5 py-4">
-        <h1 className="text-lg font-bold">High Dice</h1>
+        <h1 className="flex items-center gap-2 text-lg font-bold">
+          <Dices className="h-5 w-5 text-sky-400" aria-hidden="true" />
+          High Dice
+        </h1>
         <span className="rounded bg-sky-400 px-1.5 py-0.5 text-xs font-bold text-[#082f49]">
           {abbreviation}
         </span>
@@ -64,8 +68,9 @@ function App() {
         <button
           type="button"
           onClick={handleRestart}
-          className="w-full rounded-xl border border-[#b31e1e] bg-[#5f0b0b] py-2 text-sm"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#b31e1e] bg-[#5f0b0b] py-2 text-sm"
         >
+          <RotateCcw className="h-4 w-4" aria-hidden="true" />
           Reset Game
         </button>
       </main>

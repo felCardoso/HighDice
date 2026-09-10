@@ -1,3 +1,4 @@
+import { Check, Copy, Hash, Shuffle } from 'lucide-react'
 import { useState } from 'react'
 import { useRunStore } from '../../store/runStore'
 
@@ -30,14 +31,22 @@ export function SeedBar({ onStartWithSeed }: SeedBarProps) {
     <section className="mb-4 rounded-xl border border-[#0b2a4a] bg-[#1e293b] p-3">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-xs text-slate-400">Seed</div>
+          <div className="flex items-center gap-1 text-xs text-slate-400">
+            <Hash className="h-3 w-3" aria-hidden="true" />
+            Seed
+          </div>
           <div className="truncate font-mono text-sm">{seed}</div>
         </div>
         <button
           type="button"
           onClick={copySeed}
-          className="shrink-0 rounded-lg border border-[#12466f] bg-[#0b2a4a] px-3 py-1.5 text-xs"
+          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#12466f] bg-[#0b2a4a] px-3 py-1.5 text-xs"
         >
+          {copied ? (
+            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+          )}
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
@@ -52,8 +61,9 @@ export function SeedBar({ onStartWithSeed }: SeedBarProps) {
           type="button"
           onClick={startWithSeed}
           disabled={!input.trim()}
-          className="shrink-0 rounded-lg border border-[#1a5f94] bg-[#0b2a4a] px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#1a5f94] bg-[#0b2a4a] px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
         >
+          <Shuffle className="h-3.5 w-3.5" aria-hidden="true" />
           New Run
         </button>
       </div>

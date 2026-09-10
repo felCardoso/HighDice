@@ -1,3 +1,4 @@
+import { ArrowUpCircle, TrendingUp, X } from 'lucide-react'
 import { HAND_NAMES } from '../../game/hands'
 import { useRunStore } from '../../store/runStore'
 import { Modal } from './Modal'
@@ -14,7 +15,10 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
 
   return (
     <Modal>
-      <h3 className="mb-1 text-lg font-bold">Hand Upgrade</h3>
+      <h3 className="mb-1 flex items-center gap-1.5 text-lg font-bold">
+        <TrendingUp className="h-5 w-5 text-amber-400" aria-hidden="true" />
+        Hand Upgrade
+      </h3>
       <p className="mb-2 text-sm text-slate-400">
         {upgradesAvailable} upgrade{upgradesAvailable === 1 ? '' : 's'}{' '}
         available
@@ -31,8 +35,9 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
               type="button"
               onClick={() => upgradeHand(hand)}
               disabled={upgradesAvailable <= 0}
-              className="mt-2 w-full rounded-lg border border-[#b98a14] bg-[#5a4306] px-6 py-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#b98a14] bg-[#5a4306] px-6 py-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
+              <ArrowUpCircle className="h-4 w-4" aria-hidden="true" />
               Upgrade
             </button>
           </div>
@@ -41,8 +46,9 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
       <button
         type="button"
         onClick={onClose}
-        className="rounded-lg border border-[#12466f] bg-[#0b2a4a] px-3 py-2 text-sm"
+        className="flex items-center gap-1.5 rounded-lg border border-[#12466f] bg-[#0b2a4a] px-3 py-2 text-sm"
       >
+        <X className="h-4 w-4" aria-hidden="true" />
         Close
       </button>
     </Modal>
