@@ -1,52 +1,78 @@
 # High Dice
 
-Small single-player dice game built with HTML/CSS/JS.
+A poker-like dice roguelite inspired by Balatro, built with React, TypeScript, and Vite.
 
-## Overview
+Play at <a href="https://felcardoso.github.io/HighDice/" target="_blank" rel="noopener">HighDice</a>.
 
-High Dice is a poker-like dice game based on Balatro, but using 5 dice. The player makes "plays" that consume an stake, can reroll selected dice, and can upgrade hand levels to increase scores.
+## Status
 
-## How to run
+The project has been migrated from a vanilla-JS prototype (kept in [`legacy/`](./legacy) for
+reference) to a React app, with jokers, a shop, and seeded runs on top of the original game.
 
-- Play at <a href="https://felcardoso.github.io/HighDice/" target="_blank" rel="noopener">HighDice</a> or open `index.html` in a browser (double-click or serve with a simple static server).
+## Features
+
+- Classic poker-dice scoring: Five/Four/Three of a Kind, Full House, Straight, Two Pair, Pair.
+- Hand-level upgrades and a shop where you spend coins on passive **jokers** that boost scoring.
+- **Seeded runs** — every run has a shareable seed; typing the same seed back in reproduces the
+  exact same dice sequence for the whole run.
+- A persistent high score (stored in `localStorage`).
+- **Installable, works offline** — a full PWA: install it to your home screen/desktop, and it
+  keeps working with no network connection via a precaching service worker.
+
+## Stack
+
+- React + TypeScript, bundled with Vite
+- Tailwind CSS
+- Zustand for state management
+- Vitest for unit tests
+- ESLint + Prettier
+- GitHub Actions for CI and GitHub Pages deployment
+
+## Development
+
+```bash
+npm install
+npm run dev       # start dev server
+npm run build     # type-check + production build
+npm run test      # run unit tests
+npm run lint       # lint
+npm run format     # format with Prettier
+```
 
 ## Project structure
 
-- `index.html` — UI and markup.
-- `styles.css` — styles.
-- `game.js` — game logic (classes and functions).
-- `manifest.json` — PWA manifest.
+```
+src/
+  game/         # pure game logic (dice, hand scoring, jokers, shop, run state, rng) — no React
+  store/        # Zustand stores
+  components/   # React components, grouped by feature
+  hooks/        # custom hooks
+  lib/          # external integrations (e.g. Supabase, once added)
+tests/          # unit tests (Vitest)
+legacy/         # original vanilla-JS prototype, kept for reference during migration
+```
 
-## Key files / symbols
+## PWA
 
-- Main logic: `game.js`
-  - Classes: `Dice`, `Table`, `Run`, `Player`
-  - Constants: `HAND_SCORE`, `HAND_NAMES`, `HAND_ORDER`
-  - Render/UI: `renderHUD`, `renderDice`
-  - Actions: `rerollSelected`, `playOnce`, `openUpgradeModal`, `resetGame`
+Configured via `vite-plugin-pwa` (see `vite.config.ts`). The service worker precaches every build
+asset (JS/CSS/HTML/icons) for offline play, and auto-updates in the background — a small toast
+prompts a reload when a new version is available. On Chromium browsers, an install banner appears
+automatically; the "Install" button in the app triggers it directly.
 
-## How to play
+**A note for anyone touching the Workbox config**: don't list the same asset in both
+`workbox.globPatterns` and `includeAssets` (or `manifest.icons`) — each ends up with a different
+revision hash for the same URL, which throws `add-to-cache-list-conflicting-entries` and crashes
+the service worker's install step. The current split (JS/CSS/HTML/webmanifest via `globPatterns`,
+favicons via `includeAssets`, manifest icons handled automatically) avoids this.
 
-1. Click any die to select or deselect it.
-2. Click "Reroll" to reroll selected dice (consumes rerolls).
-3. Click "Play Hand" to score the current hand — this computes score and subtracts from the stake (consumes plays).
-4. When the stake reaches zero you level up and upgrade 1 of 4 hand options.
-5. Use "Hand Upgrade" to level up specific hands (improves multipliers/points).
+## CI/CD
 
-Game messages appear in the on-screen console log.
+`.github/workflows/ci.yml` runs lint, format check, tests, and a production build on every push
+and pull request. On a push to `main`, it also deploys `dist/` to GitHub Pages.
 
-## Scoring (summary)
-
-Each hand has a base value and multipliers in `HAND_SCORE` (see `game.js`). Final score includes the sum of dice faces plus level-based bonuses.
-
-## Development notes
-
-- Main logic is in `game.js`. Hand evaluation (pairs, three-of-a-kind, full house, straights, etc.) is implemented in the `Table` methods.
-- Styles are in `styles.css`.
-
-## Reset / State
-
-- "Reset Game" resets levels / game state and clears the log.
+**One-time setup required**: in the repo's Settings → Pages, set "Source" to **GitHub Actions**
+(instead of "Deploy from a branch"). Without this, the workflow's deploy step won't have anywhere
+to publish to.
 
 ## License
 
