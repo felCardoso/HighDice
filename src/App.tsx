@@ -49,18 +49,18 @@ function App() {
   }
 
   return (
-    <div className="min-h-dvh bg-[#0f172a] text-slate-100">
-      <header className="flex items-center justify-between border-b border-[#0b2a4a] bg-[#0b1220] px-5 py-4">
-        <h1 className="flex items-center gap-2 text-lg font-bold">
-          <Dices className="h-5 w-5 text-sky-400" aria-hidden="true" />
+    <div className="flex h-dvh w-full flex-col overflow-hidden bg-[#0f172a] text-slate-100">
+      <header className="flex shrink-0 items-center justify-between border-b border-[#0b2a4a] bg-[#0b1220] px-3 py-1.5 pt-[max(6px,env(safe-area-inset-top))]">
+        <h1 className="flex items-center gap-1.5 text-sm font-bold">
+          <Dices className="h-4 w-4 text-sky-400" aria-hidden="true" />
           High Dice
         </h1>
-        <span className="rounded bg-sky-400 px-1.5 py-0.5 text-xs font-bold text-[#082f49]">
+        <span className="rounded bg-sky-400 px-1.5 py-0.5 text-[10px] font-bold text-[#082f49]">
           {abbreviation}
         </span>
       </header>
 
-      <main className="mx-auto max-w-[980px] px-4 py-6">
+      <main className="mx-auto flex w-full max-w-[980px] flex-1 flex-col gap-1.5 overflow-hidden px-2.5 py-1.5">
         <InstallPrompt />
         <Hud />
         <SeedBar onStartWithSeed={handleStartWithSeed} />
@@ -71,9 +71,9 @@ function App() {
         <button
           type="button"
           onClick={handleRestart}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#b31e1e] bg-[#5f0b0b] py-2 text-sm"
+          className="flex shrink-0 items-center justify-center gap-2 rounded-lg border border-[#b31e1e] bg-[#5f0b0b] py-1.5 pb-[max(6px,env(safe-area-inset-bottom))] text-xs"
         >
-          <RotateCcw className="h-4 w-4" aria-hidden="true" />
+          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
           Reset Game
         </button>
       </main>

@@ -38,8 +38,8 @@ export function InstallPrompt() {
   }
 
   return (
-    <div className="mb-4 flex items-center justify-between gap-2 rounded-xl border border-[#1a5f94] bg-[#0b2a4a] px-3 py-2">
-      <span className="text-sm">Install High Dice for offline play.</span>
+    <div className="flex shrink-0 items-center justify-between gap-2 rounded-lg border border-[#1a5f94] bg-[#0b2a4a] px-2 py-1">
+      <span className="text-xs">Install High Dice for offline play.</span>
       <div className="flex shrink-0 items-center gap-2">
         <button
           type="button"

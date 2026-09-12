@@ -5,28 +5,26 @@ export function JokerTray() {
   const jokers = useRunStore((s) => s.jokers)
 
   return (
-    <section className="mb-4">
-      <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-slate-300">
-        <Sparkles className="h-4 w-4 text-amber-300" aria-hidden="true" />
-        Jokers ({jokers.length}/{MAX_JOKER_SLOTS})
-      </h2>
-      <div className="flex min-h-[52px] flex-wrap gap-2 rounded-xl border border-[#0b2a4a] bg-[#1e293b] p-3">
-        {jokers.length === 0 && (
-          <p className="text-sm text-slate-500">
-            No jokers yet — buy some in the shop after leveling up.
-          </p>
-        )}
-        {jokers.map((joker) => (
+    <section className="flex shrink-0 items-center gap-1.5 overflow-x-auto rounded-lg border border-[#0b2a4a] bg-[#1e293b] px-2 py-1">
+      <span className="flex shrink-0 items-center gap-1 text-[10px] text-slate-400">
+        <Sparkles className="h-3 w-3 text-amber-300" aria-hidden="true" />
+        {jokers.length}/{MAX_JOKER_SLOTS}
+      </span>
+      {jokers.length === 0 ? (
+        <p className="truncate text-xs text-slate-500">
+          No jokers yet — buy some in the shop.
+        </p>
+      ) : (
+        jokers.map((joker) => (
           <span
             key={joker.id}
             title={joker.description}
-            className="flex cursor-help items-center gap-1.5 rounded-lg border border-[#b98a14] bg-[#5a4306] px-2 py-1 text-sm font-semibold"
+            className="flex shrink-0 cursor-help items-center gap-1 rounded-md border border-[#b98a14] bg-[#5a4306] px-1.5 py-0.5 text-xs font-semibold"
           >
-            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
             {joker.name}
           </span>
-        ))}
-      </div>
+        ))
+      )}
     </section>
   )
 }

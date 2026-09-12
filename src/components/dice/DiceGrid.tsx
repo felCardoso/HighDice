@@ -6,7 +6,7 @@ export function DiceGrid() {
   const toggleDie = useRunStore((s) => s.toggleDie)
 
   return (
-    <section className="mb-4 grid grid-cols-5 gap-2 sm:gap-3">
+    <section className="grid shrink-0 grid-cols-5 gap-1.5 sm:gap-2">
       {dice.map((die) => (
         <DieButton key={die.id} die={die} onToggle={toggleDie} />
       ))}
