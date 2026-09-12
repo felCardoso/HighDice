@@ -1,6 +1,8 @@
 export const MAX_LEVEL = 25
 export const INITIAL_REROLL_MAX = 3
 export const INITIAL_PLAY_MAX = 3
+export const STAKE_BASE = 100
+export const STAKE_GROWTH_RATE = 1.2
 
 export type RunStatus = 'playing' | 'gameover' | 'won'
 
@@ -17,8 +19,13 @@ export interface RunState {
   status: RunStatus
 }
 
+/**
+ * Exponential stake curve: stays close to the old linear curve for the
+ * first few levels, then compounds past it — countering how joker/upgrade
+ * bonuses make score grow multiplicatively as a run progresses.
+ */
 function stakeForLevel(level: number): number {
-  return level * 100 + 50 * (level - 1)
+  return Math.round(STAKE_BASE * STAKE_GROWTH_RATE ** (level - 1))
 }
 
 export function createInitialRunState(): RunState {
