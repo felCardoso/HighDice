@@ -15,7 +15,6 @@ export interface RunState {
   rerollMax: number
   play: number
   playMax: number
-  upgradesAvailable: number
   status: RunStatus
 }
 
@@ -40,7 +39,6 @@ export function createInitialRunState(): RunState {
     rerollMax: INITIAL_REROLL_MAX,
     play: INITIAL_PLAY_MAX,
     playMax: INITIAL_PLAY_MAX,
-    upgradesAvailable: 0,
     status: 'playing',
   }
 }
@@ -74,18 +72,13 @@ export interface DeductStakeResult {
   leveledUp: boolean
 }
 
-/** Subtracts `amount` from the stake; levels up (and grants an upgrade) if it hits zero. */
+/** Subtracts `amount` from the stake; levels up if it hits zero. */
 export function deductStake(
   state: RunState,
   amount: number,
 ): DeductStakeResult {
   if (state.stake - amount <= 0) {
-    const zeroed: RunState = {
-      ...state,
-      stake: 0,
-      upgradesAvailable: state.upgradesAvailable + 1,
-    }
-    return { state: levelUp(zeroed), leveledUp: true }
+    return { state: levelUp({ ...state, stake: 0 }), leveledUp: true }
   }
   return { state: { ...state, stake: state.stake - amount }, leveledUp: false }
 }

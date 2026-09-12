@@ -10,41 +10,37 @@ import { InstallPrompt } from './components/pwa/InstallPrompt'
 import { UpdateToast } from './components/pwa/UpdateToast'
 import { SeedBar } from './components/hud/SeedBar'
 import { ShopModal } from './components/modals/ShopModal'
-import { UpgradeModal } from './components/modals/UpgradeModal'
 import { WinModal } from './components/modals/WinModal'
 import { usePlayerStore } from './store/playerStore'
 import { useRunStore } from './store/runStore'
 
-type PostLevelUpStep = 'none' | 'shop' | 'upgrade'
-
 function App() {
   const status = useRunStore((s) => s.run.status)
-  const upgradesAvailable = useRunStore((s) => s.run.upgradesAvailable)
+  const level = useRunStore((s) => s.run.level)
   const resetRun = useRunStore((s) => s.resetRun)
   const abbreviation = usePlayerStore((s) => s.abbreviation)
 
-  const [postLevelUpStep, setPostLevelUpStep] =
-    useState<PostLevelUpStep>('none')
-  const prevUpgradesAvailable = useRef(upgradesAvailable)
+  const [shopOpen, setShopOpen] = useState(false)
+  const prevLevel = useRef(level)
 
   useEffect(() => {
-    if (upgradesAvailable > prevUpgradesAvailable.current) {
-      setPostLevelUpStep('shop')
+    if (level > prevLevel.current && status === 'playing') {
+      setShopOpen(true)
     }
-    prevUpgradesAvailable.current = upgradesAvailable
-  }, [upgradesAvailable])
+    prevLevel.current = level
+  }, [level, status])
 
   useEffect(() => {
-    if (status !== 'playing') setPostLevelUpStep('none')
+    if (status !== 'playing') setShopOpen(false)
   }, [status])
 
   const handleRestart = () => {
-    setPostLevelUpStep('none')
+    setShopOpen(false)
     resetRun()
   }
 
   const handleStartWithSeed = (seed: string) => {
-    setPostLevelUpStep('none')
+    setShopOpen(false)
     resetRun(seed)
   }
 
@@ -78,11 +74,8 @@ function App() {
         </button>
       </main>
 
-      {postLevelUpStep === 'shop' && status === 'playing' && (
-        <ShopModal onClose={() => setPostLevelUpStep('upgrade')} />
-      )}
-      {postLevelUpStep === 'upgrade' && status === 'playing' && (
-        <UpgradeModal onClose={() => setPostLevelUpStep('none')} />
+      {shopOpen && status === 'playing' && (
+        <ShopModal onClose={() => setShopOpen(false)} />
       )}
       {status === 'gameover' && <GameOverModal onRestart={handleRestart} />}
       {status === 'won' && <WinModal onRestart={handleRestart} />}

@@ -79,12 +79,11 @@ describe('deductStake', () => {
     expect(next.level).toBe(1)
   })
 
-  it('levels up and grants an upgrade when stake is fully depleted', () => {
+  it('levels up when the stake is fully depleted', () => {
     const state = createInitialRunState()
     const { state: next, leveledUp } = deductStake(state, state.stake)
     expect(leveledUp).toBe(true)
     expect(next.level).toBe(2)
-    expect(next.upgradesAvailable).toBe(1)
   })
 
   it('levels up when the deduction overshoots the remaining stake', () => {
@@ -92,12 +91,5 @@ describe('deductStake', () => {
     const { state: next, leveledUp } = deductStake(state, state.stake + 1000)
     expect(leveledUp).toBe(true)
     expect(next.level).toBe(2)
-  })
-
-  it('accumulates upgrade points across multiple level-ups', () => {
-    let state = createInitialRunState()
-    ;({ state } = deductStake(state, state.stake))
-    ;({ state } = deductStake(state, state.stake))
-    expect(state.upgradesAvailable).toBe(2)
   })
 })
