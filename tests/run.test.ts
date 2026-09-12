@@ -4,17 +4,39 @@ import {
   deductStake,
   levelUp,
   MAX_LEVEL,
+  STAKE_BASE,
+  STAKE_GROWTH_RATE,
 } from '../src/game/run'
 
 describe('createInitialRunState', () => {
   it('starts at level 1 with a full stake, plays and rerolls', () => {
     const state = createInitialRunState()
     expect(state.level).toBe(1)
-    expect(state.stakeMax).toBe(100) // 1*100 + 50*0
+    expect(state.stakeMax).toBe(STAKE_BASE) // growth_rate^0 === 1
     expect(state.stake).toBe(state.stakeMax)
     expect(state.play).toBe(state.playMax)
     expect(state.reroll).toBe(state.rerollMax)
     expect(state.status).toBe('playing')
+  })
+})
+
+describe('stake curve', () => {
+  it('compounds by roughly the growth rate each level', () => {
+    let state = createInitialRunState()
+    for (let i = 0; i < 5; i++) {
+      const prevStake = state.stakeMax
+      state = levelUp(state)
+      const ratio = state.stakeMax / prevStake
+      expect(ratio).toBeGreaterThan(STAKE_GROWTH_RATE - 0.05)
+      expect(ratio).toBeLessThan(STAKE_GROWTH_RATE + 0.05)
+    }
+  })
+
+  it('grows exponentially rather than linearly by the late game', () => {
+    let state = createInitialRunState()
+    for (let i = 1; i < MAX_LEVEL; i++) state = levelUp(state)
+    // The old linear curve (level*100 + 50*(level-1)) capped out at 3700.
+    expect(state.stakeMax).toBeGreaterThan(3700)
   })
 })
 
@@ -57,12 +79,11 @@ describe('deductStake', () => {
     expect(next.level).toBe(1)
   })
 
-  it('levels up and grants an upgrade when stake is fully depleted', () => {
+  it('levels up when the stake is fully depleted', () => {
     const state = createInitialRunState()
     const { state: next, leveledUp } = deductStake(state, state.stake)
     expect(leveledUp).toBe(true)
     expect(next.level).toBe(2)
-    expect(next.upgradesAvailable).toBe(1)
   })
 
   it('levels up when the deduction overshoots the remaining stake', () => {
@@ -70,12 +91,5 @@ describe('deductStake', () => {
     const { state: next, leveledUp } = deductStake(state, state.stake + 1000)
     expect(leveledUp).toBe(true)
     expect(next.level).toBe(2)
-  })
-
-  it('accumulates upgrade points across multiple level-ups', () => {
-    let state = createInitialRunState()
-    ;({ state } = deductStake(state, state.stake))
-    ;({ state } = deductStake(state, state.stake))
-    expect(state.upgradesAvailable).toBe(2)
   })
 })

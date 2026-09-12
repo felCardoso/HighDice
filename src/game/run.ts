@@ -1,6 +1,8 @@
 export const MAX_LEVEL = 25
 export const INITIAL_REROLL_MAX = 3
 export const INITIAL_PLAY_MAX = 3
+export const STAKE_BASE = 100
+export const STAKE_GROWTH_RATE = 1.2
 
 export type RunStatus = 'playing' | 'gameover' | 'won'
 
@@ -13,12 +15,16 @@ export interface RunState {
   rerollMax: number
   play: number
   playMax: number
-  upgradesAvailable: number
   status: RunStatus
 }
 
+/**
+ * Exponential stake curve: stays close to the old linear curve for the
+ * first few levels, then compounds past it — countering how joker/upgrade
+ * bonuses make score grow multiplicatively as a run progresses.
+ */
 function stakeForLevel(level: number): number {
-  return level * 100 + 50 * (level - 1)
+  return Math.round(STAKE_BASE * STAKE_GROWTH_RATE ** (level - 1))
 }
 
 export function createInitialRunState(): RunState {
@@ -33,7 +39,6 @@ export function createInitialRunState(): RunState {
     rerollMax: INITIAL_REROLL_MAX,
     play: INITIAL_PLAY_MAX,
     playMax: INITIAL_PLAY_MAX,
-    upgradesAvailable: 0,
     status: 'playing',
   }
 }
@@ -67,18 +72,13 @@ export interface DeductStakeResult {
   leveledUp: boolean
 }
 
-/** Subtracts `amount` from the stake; levels up (and grants an upgrade) if it hits zero. */
+/** Subtracts `amount` from the stake; levels up if it hits zero. */
 export function deductStake(
   state: RunState,
   amount: number,
 ): DeductStakeResult {
   if (state.stake - amount <= 0) {
-    const zeroed: RunState = {
-      ...state,
-      stake: 0,
-      upgradesAvailable: state.upgradesAvailable + 1,
-    }
-    return { state: levelUp(zeroed), leveledUp: true }
+    return { state: levelUp({ ...state, stake: 0 }), leveledUp: true }
   }
   return { state: { ...state, stake: state.stake - amount }, leveledUp: false }
 }

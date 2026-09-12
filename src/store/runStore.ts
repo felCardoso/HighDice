@@ -10,8 +10,16 @@ import {
   computeUpgradeOptions,
   createDefaultHandLevels,
   HAND_NAMES,
+  HAND_ORDER,
+  handUpgradeCost,
 } from '../game/hands'
-import { applyJokerBonuses, JOKER_CATALOG, type Joker } from '../game/jokers'
+import {
+  advanceJokerEvolutions,
+  applyJokerBonuses,
+  JOKER_CATALOG,
+  type Joker,
+  type OwnedJoker,
+} from '../game/jokers'
 import { createInitialRunState, deductStake, type RunState } from '../game/run'
 import {
   createSeededRng,
@@ -20,12 +28,17 @@ import {
   type Rng,
 } from '../game/rng'
 import { checkScore, type ScoreResult } from '../game/scoring'
-import { buyJoker as buyJokerLogic, generateShopOffers } from '../game/shop'
+import {
+  buyJoker as buyJokerLogic,
+  generateShopOffers,
+  sellJoker as sellJokerLogic,
+} from '../game/shop'
 import type { Die, HandLevels, HandType } from '../game/types'
 import { usePlayerStore } from './playerStore'
 
 export const MAX_JOKER_SLOTS = 5
-export const LEVEL_UP_COINS = 5
+export const LEVEL_UP_COINS = 8
+export const REROLL_COST = 3
 
 export interface LogEntry {
   id: number
@@ -43,7 +56,7 @@ interface RunStoreState {
   lastScore: ScoreResult | null
   log: LogEntry[]
   coins: number
-  jokers: Joker[]
+  jokers: OwnedJoker[]
   shopOffers: Joker[]
 
   toggleDie: (id: number) => void
@@ -51,6 +64,9 @@ interface RunStoreState {
   playHand: () => void
   upgradeHand: (hand: HandType) => void
   buyJoker: (jokerId: string) => void
+  sellJoker: (jokerId: string) => void
+  rerollShop: () => void
+  reorderJokers: (order: string[]) => void
   /** Starts a fresh run. Pass a seed to reproduce a specific run's dice sequence. */
   resetRun: (seed?: string) => void
 }
@@ -128,7 +144,14 @@ export const useRunStore = create<RunStoreState>((set, get) => ({
 
     usePlayerStore.getState().recordScore(score.result)
 
+    const { jokers: evolvedJokers, leveledUp: jokerLevelUps } =
+      advanceJokerEvolutions(jokers)
+
     let nextLog = withLog(log, formatScoreLog(score))
+    for (const evo of jokerLevelUps) {
+      nextLog = withLog(nextLog, `${evo.name} reached level ${evo.newLevel}!`)
+    }
+
     let upgradeOptions = get().upgradeOptions
     let shopOffers = get().shopOffers
     let finalRun = nextRun
@@ -137,8 +160,8 @@ export const useRunStore = create<RunStoreState>((set, get) => ({
     if (nextRun.status === 'won') {
       nextLog = withLog(nextLog, `You beat level ${nextRun.maxLevel}!`)
     } else if (leveledUp) {
-      upgradeOptions = computeUpgradeOptions(undefined, rng)
-      shopOffers = generateShopOffers(JOKER_CATALOG, jokers, rng)
+      upgradeOptions = computeUpgradeOptions(handLevels, HAND_ORDER, rng)
+      shopOffers = generateShopOffers(JOKER_CATALOG, evolvedJokers, rng)
       nextCoins += LEVEL_UP_COINS
       nextLog = withLog(nextLog, `Level ${nextRun.level}.`)
       nextLog = withLog(nextLog, 'Rerolls and plays reset.')
@@ -153,6 +176,7 @@ export const useRunStore = create<RunStoreState>((set, get) => ({
     set({
       run: finalRun,
       dice: shouldRollDice ? rollAll(dice, rng) : dice,
+      jokers: evolvedJokers,
       lastScore: score,
       upgradeOptions,
       shopOffers,
@@ -162,18 +186,19 @@ export const useRunStore = create<RunStoreState>((set, get) => ({
   },
 
   upgradeHand: (hand) => {
-    const { run, handLevels, log } = get()
-    if (run.upgradesAvailable <= 0) {
-      set({ log: withLog(log, 'No upgrades available.') })
+    const { handLevels, coins, log } = get()
+    const cost = handUpgradeCost(handLevels[hand])
+    if (coins < cost) {
+      set({ log: withLog(log, 'Not enough coins.') })
       return
     }
     const nextLevels = { ...handLevels, [hand]: handLevels[hand] + 1 }
     set({
       handLevels: nextLevels,
-      run: { ...run, upgradesAvailable: run.upgradesAvailable - 1 },
+      coins: coins - cost,
       log: withLog(
         log,
-        `${HAND_NAMES[hand]} upgraded to lv. ${nextLevels[hand]}.`,
+        `${HAND_NAMES[hand]} upgraded to lv. ${nextLevels[hand]} (-${cost} coins).`,
       ),
     })
   },
@@ -199,6 +224,45 @@ export const useRunStore = create<RunStoreState>((set, get) => ({
       shopOffers: shopOffers.filter((j) => j.id !== jokerId),
       log: withLog(log, `Bought ${joker.name}.`),
     })
+  },
+
+  sellJoker: (jokerId) => {
+    const { coins, jokers, log } = get()
+    const result = sellJokerLogic(coins, jokers, jokerId)
+    if (!result.success) return
+
+    const sold = jokers.find((j) => j.id === jokerId)
+    set({
+      coins: result.coins,
+      jokers: result.owned,
+      log: withLog(
+        log,
+        `Sold ${sold?.name ?? 'joker'} for +${result.refund} coins.`,
+      ),
+    })
+  },
+
+  rerollShop: () => {
+    const { coins, jokers, log, rng } = get()
+    if (coins < REROLL_COST) {
+      set({ log: withLog(log, 'Not enough coins to reroll.') })
+      return
+    }
+    set({
+      coins: coins - REROLL_COST,
+      shopOffers: generateShopOffers(JOKER_CATALOG, jokers, rng),
+      log: withLog(log, `Rerolled the shop (-${REROLL_COST} coins).`),
+    })
+  },
+
+  reorderJokers: (order) => {
+    const { jokers } = get()
+    const byId = new Map(jokers.map((j) => [j.id, j]))
+    const reordered = order
+      .map((id) => byId.get(id))
+      .filter((j): j is OwnedJoker => j !== undefined)
+    const missing = jokers.filter((j) => !order.includes(j.id))
+    set({ jokers: [...reordered, ...missing] })
   },
 
   resetRun: (seed) => {

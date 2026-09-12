@@ -71,17 +71,36 @@ export function checkHand(values: DieValue[]): HandCheck {
 }
 
 /**
- * Picks a random 4-of-8 subset of hand types to offer as upgrade options.
+ * Picks a 4-of-8 subset of hand types to offer as upgrade options, weighted
+ * so hands at a lower level are more likely to come up than ones already
+ * heavily upgraded (weight = 1 / current level).
  */
 export function computeUpgradeOptions(
+  handLevels: HandLevels,
   handOrder: HandType[] = HAND_ORDER,
   rng: () => number = Math.random,
   count = 4,
 ): HandType[] {
-  const pool = [...handOrder]
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1))
-    ;[pool[i], pool[j]] = [pool[j], pool[i]]
+  const pool = handOrder.map((hand) => ({ hand, weight: 1 / handLevels[hand] }))
+  const result: HandType[] = []
+
+  const n = Math.min(count, pool.length)
+  for (let i = 0; i < n; i++) {
+    const totalWeight = pool.reduce((sum, p) => sum + p.weight, 0)
+    let r = rng() * totalWeight
+    let idx = 0
+    for (; idx < pool.length - 1; idx++) {
+      r -= pool[idx].weight
+      if (r <= 0) break
+    }
+    result.push(pool[idx].hand)
+    pool.splice(idx, 1)
   }
-  return pool.slice(0, count)
+
+  return result
+}
+
+/** Coins needed to raise a hand from `currentLevel` to `currentLevel + 1`. */
+export function handUpgradeCost(currentLevel: number): number {
+  return 3 + 2 * (currentLevel - 1)
 }

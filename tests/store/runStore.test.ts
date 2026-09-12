@@ -21,6 +21,9 @@ beforeEach(() => {
     upgradeOptions: [],
     lastScore: null,
     log: [],
+    coins: 0,
+    jokers: [],
+    shopOffers: [],
   })
   usePlayerStore.setState({ score: 0, highScore: 0 })
 })
@@ -65,7 +68,7 @@ describe('playHand', () => {
     expect(usePlayerStore.getState().score).toBe(state.lastScore?.result)
   })
 
-  it('levels up and grants an upgrade when the stake is depleted', () => {
+  it('levels up and grants shop coins when the stake is depleted', () => {
     const { run } = useRunStore.getState()
     useRunStore.setState({ run: { ...run, stake: 1 } })
 
@@ -73,8 +76,9 @@ describe('playHand', () => {
 
     const state = useRunStore.getState()
     expect(state.run.level).toBe(2)
-    expect(state.run.upgradesAvailable).toBe(1)
+    expect(state.coins).toBeGreaterThan(0)
     expect(state.upgradeOptions).toHaveLength(4)
+    expect(state.shopOffers.length).toBeGreaterThan(0)
     expect(state.log.some((l) => /level 2/i.test(l.message))).toBe(true)
   })
 
@@ -103,21 +107,21 @@ describe('playHand', () => {
 })
 
 describe('upgradeHand', () => {
-  it('refuses to upgrade without an available upgrade point', () => {
+  it('refuses to upgrade without enough coins', () => {
+    useRunStore.setState({ coins: 0 })
     useRunStore.getState().upgradeHand('K2')
     expect(useRunStore.getState().handLevels.K2).toBe(1)
-    expect(useRunStore.getState().log[0].message).toMatch(/no upgrades/i)
+    expect(useRunStore.getState().log[0].message).toMatch(/not enough coins/i)
   })
 
-  it('spends an upgrade point to raise a hand level', () => {
-    const { run } = useRunStore.getState()
-    useRunStore.setState({ run: { ...run, upgradesAvailable: 1 } })
+  it('spends coins to raise a hand level', () => {
+    useRunStore.setState({ coins: 10 }) // handUpgradeCost(1) === 3
 
     useRunStore.getState().upgradeHand('K2')
 
     const state = useRunStore.getState()
     expect(state.handLevels.K2).toBe(2)
-    expect(state.run.upgradesAvailable).toBe(0)
+    expect(state.coins).toBe(7)
   })
 })
 
